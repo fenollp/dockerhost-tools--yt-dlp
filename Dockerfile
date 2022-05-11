@@ -4,8 +4,11 @@ FROM --platform=$BUILDPLATFORM docker.io/library/python:alpine@sha256:318c53a8d5
 RUN \
   --mount=type=cache,target=/var/cache/apk ln -vs /var/cache/apk /etc/apk/cache && \
     set -ux \
- && apk add --no-cache --virtual .build-deps gcc musl-dev \
- && pip install --no-cache-dir pycrypto yt-dlp \
+ && apk add --no-cache --virtual .build-deps gcc musl-dev git \
+ && pip install --no-cache-dir pycrypto \
+ # && pip install --no-cache-dir yt-dlp \
+ # TODO: drop whence https://github.com/yt-dlp/yt-dlp/pull/3302
+ && pip install --no-cache-dir git+https://github.com/fstirlitz/yt-dlp@23c565604a5497dc141ae2b562f2467617b8856a \
  && apk del .build-deps \
  && apk add --no-cache ffmpeg
 RUN \
