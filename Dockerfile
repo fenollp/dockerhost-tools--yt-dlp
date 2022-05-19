@@ -1,28 +1,36 @@
 # syntax=docker/dockerfile:1@sha256:91f386bc3ae6cd5585fbd02f811e295b4a7020c23c7691d686830bf6233e91ad
 
-FROM --platform=$BUILDPLATFORM docker.io/library/python:alpine@sha256:318c53a8d5c0f56228f7c03a9b5108166cde24131d32ebe6e591ad08d0244ab7 AS tool
+FROM --platform=$BUILDPLATFORM docker.io/library/python:alpine@sha256:f4c1b7853b1513eb2f551597e2929b66374ade28465e7d79ac9e099ccecdfeec AS tool
 RUN \
   --mount=type=cache,target=/var/cache/apk ln -vs /var/cache/apk /etc/apk/cache && \
     set -ux \
- && apk add --no-cache --virtual .build-deps gcc musl-dev git \
- && pip install --no-cache-dir pycrypto \
+ && apk add --virtual .build-deps gcc musl-dev git \
+
+ # https://github.com/yt-dlp/yt-dlp/tree/0b9c08b47bb5e95c21b067044ace4e824d19a9c2#dependencies
+ && pip install --no-cache-dir brotli certifi mutagen pycryptodome websockets \
+ && apk add ffmpeg mpv rtmpdump \
+
  # && pip install --no-cache-dir yt-dlp \
  # TODO: drop whence https://github.com/yt-dlp/yt-dlp/pull/3302
  && pip install --no-cache-dir git+https://github.com/fstirlitz/yt-dlp@23c565604a5497dc141ae2b562f2467617b8856a \
- && apk del .build-deps \
- && apk add --no-cache ffmpeg
+
+ && apk del .build-deps
 RUN \
     set -ux \
  && echo --force-ipv4 >>/etc/yt-dlp.conf \
+
  # NOTE: https://github.com/yt-dlp/yt-dlp/issues/1136#issuecomment-932077195
  && echo "--output '%(title).200s-%(id)s.%(ext)s'" >>/etc/yt-dlp.conf \
+
  && echo --audio-multistreams >>/etc/yt-dlp.conf \
  && echo --video-multistreams >>/etc/yt-dlp.conf \
+ && echo --check-formats >>/etc/yt-dlp.conf \
  && echo --abort-on-error >>/etc/yt-dlp.conf \
  && echo --embed-subs >>/etc/yt-dlp.conf \
  && echo --embed-thumbnail >>/etc/yt-dlp.conf \
  && echo --embed-metadata >>/etc/yt-dlp.conf \
  && echo --embed-chapters >>/etc/yt-dlp.conf \
+
  # TODO: https://github.com/yt-dlp/yt-dlp/issues/2875
  && echo "--sponsorblock-remove 'sponsor,interaction'" >>/etc/yt-dlp.conf
 
