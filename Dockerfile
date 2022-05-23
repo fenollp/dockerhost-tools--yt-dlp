@@ -10,9 +10,9 @@ RUN \
  && pip install --no-cache-dir brotli certifi mutagen pycryptodome websockets \
  && apk add ffmpeg mpv rtmpdump \
 
- # && pip install --no-cache-dir yt-dlp \
+ && pip install --no-cache-dir yt-dlp \
  # TODO: drop whence https://github.com/yt-dlp/yt-dlp/pull/3302
- && pip install --no-cache-dir git+https://github.com/fstirlitz/yt-dlp@23c565604a5497dc141ae2b562f2467617b8856a \
+ #&& pip install --no-cache-dir git+https://github.com/fstirlitz/yt-dlp@23c565604a5497dc141ae2b562f2467617b8856a \
 
  && apk del .build-deps
 RUN \
@@ -25,7 +25,10 @@ RUN \
  && echo --audio-multistreams >>/etc/yt-dlp.conf \
  && echo --video-multistreams >>/etc/yt-dlp.conf \
  && echo --check-formats >>/etc/yt-dlp.conf \
+
+ # https://github.com/yt-dlp/yt-dlp/issues/2875#issuecomment-1055015391
  && echo --abort-on-error >>/etc/yt-dlp.conf \
+
  && echo --embed-subs >>/etc/yt-dlp.conf \
  && echo --embed-thumbnail >>/etc/yt-dlp.conf \
  && echo --embed-metadata >>/etc/yt-dlp.conf \
