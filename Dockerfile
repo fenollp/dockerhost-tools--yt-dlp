@@ -29,13 +29,13 @@ RUN \
  # https://github.com/yt-dlp/yt-dlp/issues/2875#issuecomment-1055015391
  && echo --abort-on-error >>/etc/yt-dlp.conf \
 
+ # TODO: https://github.com/yt-dlp/yt-dlp/issues/2875
+ && echo "--sponsorblock-remove 'sponsor,interaction'" >>/etc/yt-dlp.conf \
+
  && echo --embed-subs >>/etc/yt-dlp.conf \
  && echo --embed-thumbnail >>/etc/yt-dlp.conf \
  && echo --embed-metadata >>/etc/yt-dlp.conf \
- && echo --embed-chapters >>/etc/yt-dlp.conf \
-
- # TODO: https://github.com/yt-dlp/yt-dlp/issues/2875
- && echo "--sponsorblock-remove 'sponsor,interaction'" >>/etc/yt-dlp.conf
+ && echo --embed-chapters >>/etc/yt-dlp.conf
 
 FROM tool AS product
 WORKDIR /app
