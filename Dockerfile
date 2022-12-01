@@ -33,7 +33,8 @@ RUN \
  && echo "--sponsorblock-remove 'sponsor,interaction'" >>/etc/yt-dlp.conf \
 
  # https://github.com/yt-dlp/yt-dlp/issues/871#issuecomment-911701285
- && echo --force-keyframes >>/etc/yt-dlp.conf \
+# && echo --force-keyframes >>/etc/yt-dlp.conf \
+# && echo --force-keyframes-at-cuts >>/etc/yt-dlp.conf \
 
  && echo --embed-subs >>/etc/yt-dlp.conf \
  && echo --embed-thumbnail >>/etc/yt-dlp.conf \
@@ -50,6 +51,13 @@ RUN \
  && cmd="yt-dlp --cache-dir /root/.cache/yt-dlp --newline" \
  && cmd="$cmd '$(echo "$ARGs" | sed "s%$SEPARATOR%' '%g")'" \
  && eval $cmd
+
+RUN \
+    set -ux \
+ && vid=$(echo /app/*) \
+ && vid=${vid##/app/} \
+ && ffmpeg -i "$vid" -force_key_frames 'expr:gte(t,n_forced*3)' _"$vid" \
+ && mv _"$vid" "$vid"
 
 FROM scratch
 COPY --from=product /app/* /
