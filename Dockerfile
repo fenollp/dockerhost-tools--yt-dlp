@@ -1,20 +1,32 @@
-# syntax=docker/dockerfile:1@sha256:91f386bc3ae6cd5585fbd02f811e295b4a7020c23c7691d686830bf6233e91ad
+# syntax=docker.io/docker/dockerfile:1@sha256:9ba7531bd80fb0a858632727cf7a112fbfd19b17e94c4e84ced81e24ef1a0dbc
 
-FROM --platform=$BUILDPLATFORM docker.io/library/python:alpine@sha256:f4c1b7853b1513eb2f551597e2929b66374ade28465e7d79ac9e099ccecdfeec AS tool
+# Use alpine:edge to get ffmpeg >=5.1 because https://github.com/yt-dlp/yt-dlp/issues/871#issuecomment-911701285
+FROM --platform=$BUILDPLATFORM docker.io/library/alpine:edge@sha256:c223f84e05c23c0571ce8decefef818864869187e1a3ea47719412e205c8c64e AS tool
 RUN \
   --mount=type=cache,target=/var/cache/apk ln -vs /var/cache/apk /etc/apk/cache && \
     set -ux \
- && apk add --virtual .build-deps gcc musl-dev git \
-
- # https://github.com/yt-dlp/yt-dlp/tree/0b9c08b47bb5e95c21b067044ace4e824d19a9c2#dependencies
- && pip install --no-cache-dir brotli certifi mutagen pycryptodome websockets \
- && apk add ffmpeg mpv rtmpdump \
-
- && pip install --no-cache-dir yt-dlp \
+ && apk add \
+            ffmpeg \
+            gcc \
+            git \
+            mpv \
+            musl-dev \
+            py3-pip \
+            python3 \
+            python3-dev \
+            rtmpdump \
+ # https://github.com/yt-dlp/yt-dlp/tree/c9f5ce511877ae4f22d2eb2f70c3c6edf6c1971d#dependencies
+ && pip install --no-cache-dir \
+                               brotli \
+                               certifi \
+                               mutagen \
+                               phantomjs \
+                               pycryptodomex \
+                               websockets \
+                               xattr \
+ && pip install --no-cache-dir yt-dlp
  # TODO: drop whence https://github.com/yt-dlp/yt-dlp/pull/3302
- #&& pip install --no-cache-dir git+https://github.com/fstirlitz/yt-dlp@23c565604a5497dc141ae2b562f2467617b8856a \
-
- && apk del .build-deps
+ #&& pip install --no-cache-dir git+https://github.com/fstirlitz/yt-dlp@23c565604a5497dc141ae2b562f2467617b8856a
 RUN \
     set -ux \
  && echo --force-ipv4 >>/etc/yt-dlp.conf \
@@ -51,7 +63,6 @@ RUN \
  && cmd="yt-dlp --cache-dir /root/.cache/yt-dlp --newline" \
  && cmd="$cmd '$(echo "$ARGs" | sed "s%$SEPARATOR%' '%g")'" \
  && eval $cmd
-
 RUN \
     set -ux \
  && vid=$(echo /app/*) \
