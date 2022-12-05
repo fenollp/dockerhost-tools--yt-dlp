@@ -65,8 +65,7 @@ RUN \
  && eval $cmd
 RUN \
     set -ux \
- && vid=$(echo /app/*) \
- && vid=${vid##/app/} \
+ && vid=$(ls -S | head -n1) \
  && ffmpeg -i "$vid" -force_key_frames 'expr:gte(t,n_forced*3)' _"$vid" \
  && mv _"$vid" "$vid"
 
