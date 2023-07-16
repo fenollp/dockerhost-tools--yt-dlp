@@ -1,7 +1,8 @@
-# syntax=docker.io/docker/dockerfile:1@sha256:9ba7531bd80fb0a858632727cf7a112fbfd19b17e94c4e84ced81e24ef1a0dbc
+# syntax=docker.io/docker/dockerfile:1@sha256:39b85bbfa7536a5feceb7372a0817649ecb2724562a38360f4d6a7782a409b14
 
-# Use alpine:edge to get ffmpeg >=5.1 because https://github.com/yt-dlp/yt-dlp/issues/871#issuecomment-911701285
-FROM --platform=$BUILDPLATFORM docker.io/library/alpine:edge@sha256:c223f84e05c23c0571ce8decefef818864869187e1a3ea47719412e205c8c64e AS tool
+FROM --platform=$BUILDPLATFORM docker.io/library/alpine@sha256:82d1e9d7ed48a7523bdebc18cf6290bdb97b82302a8a9c27d4fe885949ea94d1 AS alpine
+
+FROM --platform=$BUILDPLATFORM alpine AS tool
 RUN \
   --mount=type=cache,target=/var/cache/apk ln -vs /var/cache/apk /etc/apk/cache && \
     set -ux \
@@ -15,7 +16,7 @@ RUN \
             python3 \
             python3-dev \
             rtmpdump \
- # https://github.com/yt-dlp/yt-dlp/tree/c9f5ce511877ae4f22d2eb2f70c3c6edf6c1971d#dependencies
+ # https://github.com/yt-dlp/yt-dlp/tree/613dbce177d34ffc31053e8e01acf4bb107bcd1e#dependencies
  && pip install --no-cache-dir \
                                brotli \
                                certifi \
@@ -25,8 +26,6 @@ RUN \
                                websockets \
                                xattr \
  && pip install --no-cache-dir yt-dlp
- # TODO: drop whence https://github.com/yt-dlp/yt-dlp/pull/3302
- #&& pip install --no-cache-dir git+https://github.com/fstirlitz/yt-dlp@23c565604a5497dc141ae2b562f2467617b8856a
 RUN \
     set -ux \
  && echo --force-ipv4 >>/etc/yt-dlp.conf \
@@ -48,10 +47,11 @@ RUN \
 # && echo --force-keyframes >>/etc/yt-dlp.conf \
 # && echo --force-keyframes-at-cuts >>/etc/yt-dlp.conf \
 
- && echo --embed-subs >>/etc/yt-dlp.conf \
- && echo --embed-thumbnail >>/etc/yt-dlp.conf \
+ && echo --embed-chapters >>/etc/yt-dlp.conf \
+ && echo --embed-info-json >>/etc/yt-dlp.conf \
  && echo --embed-metadata >>/etc/yt-dlp.conf \
- && echo --embed-chapters >>/etc/yt-dlp.conf
+ && echo --embed-subs >>/etc/yt-dlp.conf \
+ && echo --embed-thumbnail >>/etc/yt-dlp.conf
 
 FROM tool AS product
 WORKDIR /app
@@ -61,6 +61,7 @@ RUN \
     --mount=type=cache,target=/root/.cache/yt-dlp \
     set -ux \
  && cmd="yt-dlp --cache-dir /root/.cache/yt-dlp --newline" \
+ && case "$ARGs" in *' -f '*) ;; *' --format '*) ;; *' --format='*) ;; *) ARGs="--format 'bv*[ext=mp4]+ba[ext=m4a]/b[ext=mp4]/bv*+ba/b' $ARGs" ;; esac \
  && cmd="$cmd '$(echo "$ARGs" | sed "s%$SEPARATOR%' '%g")'" \
  && eval $cmd
 RUN \
