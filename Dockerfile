@@ -16,7 +16,7 @@ RUN \
             python3 \
             python3-dev \
             rtmpdump \
- # https://github.com/yt-dlp/yt-dlp/tree/613dbce177d34ffc31053e8e01acf4bb107bcd1e#dependencies
+# https://github.com/yt-dlp/yt-dlp/tree/613dbce177d34ffc31053e8e01acf4bb107bcd1e#dependencies
  && pip install --no-cache-dir \
                                brotli \
                                certifi \
@@ -29,24 +29,18 @@ RUN \
 RUN \
     set -ux \
  && echo --force-ipv4 >>/etc/yt-dlp.conf \
-
- # NOTE: https://github.com/yt-dlp/yt-dlp/issues/1136#issuecomment-932077195
+# NOTE: https://github.com/yt-dlp/yt-dlp/issues/1136#issuecomment-932077195
  && echo "--output '%(title).200s-%(id)s.%(ext)s'" >>/etc/yt-dlp.conf \
-
  && echo --audio-multistreams >>/etc/yt-dlp.conf \
  && echo --video-multistreams >>/etc/yt-dlp.conf \
  && echo --check-formats >>/etc/yt-dlp.conf \
-
- # https://github.com/yt-dlp/yt-dlp/issues/2875#issuecomment-1055015391
+# https://github.com/yt-dlp/yt-dlp/issues/2875#issuecomment-1055015391
  && echo --abort-on-error >>/etc/yt-dlp.conf \
-
- # TODO: https://github.com/yt-dlp/yt-dlp/issues/2875
+# TODO: https://github.com/yt-dlp/yt-dlp/issues/2875
  && echo "--sponsorblock-remove 'sponsor,interaction'" >>/etc/yt-dlp.conf \
-
- # https://github.com/yt-dlp/yt-dlp/issues/871#issuecomment-911701285
-# && echo --force-keyframes >>/etc/yt-dlp.conf \
-# && echo --force-keyframes-at-cuts >>/etc/yt-dlp.conf \
-
+# https://github.com/yt-dlp/yt-dlp/issues/871#issuecomment-911701285
+#&& echo --force-keyframes >>/etc/yt-dlp.conf \
+#&& echo --force-keyframes-at-cuts >>/etc/yt-dlp.conf \
  && echo --embed-chapters >>/etc/yt-dlp.conf \
  && echo --embed-info-json >>/etc/yt-dlp.conf \
  && echo --embed-metadata >>/etc/yt-dlp.conf \
