@@ -64,17 +64,25 @@ RUN \
  && case "$ARGs" in *' -f '*) ;; *' --format '*) ;; *' --format='*) ;; *) ARGs="--format 'bv*[ext=mp4]+ba[ext=m4a]/b[ext=mp4]/bv*+ba/b' $ARGs" ;; esac \
  && cmd="$cmd '$(echo "$ARGs" | sed "s%$SEPARATOR%' '%g")'" \
  && eval $cmd
+ARG DO_NOT_REENCODE
 RUN \
     set -ux \
  && vid=$(ls -S | head -n1) \
- && ffmpeg -i "$vid" -force_key_frames 'expr:gte(t,n_forced*3)' _"$vid" \
- && mv _"$vid" "$vid"
+ && case "${DO_NOT_REENCODE:-}" in \
+    '1') ;; \
+# https://superuser.com/questions/908280/what-is-the-correct-way-to-fix-keyframes-in-ffmpeg-for-dash
+    '')   ffmpeg -i "$vid" -force_key_frames 'expr:gte(t,n_forced*3)' _"$vid" \
+       && mv _"$vid" "$vid" \
+       ;; \
+    *) echo "Unsupported DO_NOT_REENCODE=$DO_NOT_REENCODE, try =1 or do not set it." && exit 2 ;; \
+    esac
 
 FROM scratch
 COPY --from=product /app/* /
 
 ## ARG SEPARATOR=' ': non-sed-special string that separates given $ARGs
 ## ARG ARGs: $SEPARATOR-separated CLI arguments
+## ARG DO_NOT_REENCODE: set this to skip re-encoding video (with ffmpeg)
 ## Usage:
 # DOCKER_BUILDKIT=1 docker build -o=. --build-arg ARGs='--format mp4/bestvideo*+bestaudio/best -- https://www.youtube.com/watch?v=BXmOlCy0oBM https://www.youtube.com/watch?v=dQw4w9WgXcQ' - <Dockerfile && ( ls -1 . && rm 'Erlang - The Movie (Fixed Audio)-BXmOlCy0oBM.mp4' 'Rick Astley - Never Gonna Give You Up (Official Music Video)-dQw4w9WgXcQ.mp4' )
 # Dockerfile
