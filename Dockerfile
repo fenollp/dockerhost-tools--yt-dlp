@@ -93,7 +93,6 @@ RUN \
     set -ux \
  && if [ "${DO_NOT_REENCODE:-}" != '1' ]; then \
       while read -r vid; do \
-      echo ."$vid".; exit 42; \
 # https://superuser.com/questions/908280/what-is-the-correct-way-to-fix-keyframes-in-ffmpeg-for-dash
         ffmpeg -i "$vid" -force_key_frames 'expr:gte(t,n_forced*3)' _"$vid" && mv _"$vid" "$vid"; \
 # 11 ? to hopefully only match YouTube IDs
